@@ -6,9 +6,7 @@ import club.minnced.discord.webhook.send.WebhookMessage;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.MessageType;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.Webhook;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -16,6 +14,8 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -31,19 +31,21 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
     MinecraftUtils minecraftUtils;
     TextChannel discordChannel;
     Webhook webhook;
-    ComponentLogger logger = JavaPlugin.getPlugin(Discord.class).getComponentLogger();
+    final ComponentLogger logger = JavaPlugin.getPlugin(Discord.class).getComponentLogger();
     JDA jda;
+    ApplicationInfo info;
     public void setMinecraft(MinecraftUtils minecraftUtils){
         this.minecraftUtils = minecraftUtils;
     }
     public void setJDA(JDA jda){
         this.jda = jda;
         discordChannel = getDiscordChannel();
-        if(webhook == null && !(discordChannel == null)) webhook = getWebhook();
+        if(webhook == null && discordChannel != null) webhook = getWebhook();
         if(discordChannel != null && webhook != null) {
-            logger.debug(Component.text("Discord channel name " + discordChannel.getName()));
-            logger.debug(Component.text("Webhook ID " + webhook.getId()));
+            logger.debug(Component.text("Webhook name " + webhook.getName()));
+            logger.info(Component.text("Successfully connected to discord channel "+ discordChannel.getName()));
         }
+        info = jda.retrieveApplicationInfo().complete();
     }
 
     @Override
@@ -54,17 +56,113 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
             && !event.getMessage().isEphemeral())
                 if(!event.getAuthor().getFlags().contains(User.UserFlag.BOT_HTTP_INTERACTIONS) ||
                         !event.getAuthor().getFlags().contains(User.UserFlag.VERIFIED_BOT)){
-                    if(event.getMessage().getType().equals(MessageType.INLINE_REPLY))
+                    Component[] senderRoles = {Component.text(
+                            "Roles: ",
+                            TextColor.color(255, 255, 255)
+                    )};
+                    Role lastRole = event.getMember().getRoles().get(event.getMember().getRoles().size() - 1);
+                    senderRoles[0] = senderRoles[0].append( // Use an array cause of strict finality in .forEach
+                            Component.text(
+                                    "█",
+                                    TextColor.color(lastRole.getColorRaw())
+                            )
+                    ).append(
+                            Component.text(
+                                    lastRole.getName(),
+                                    TextColor.color(lastRole.getColorRaw())
+                            )
+                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE);
+                    event.getMember().getRoles().forEach(
+                            role -> {
+                                if (role != lastRole)
+                                    senderRoles[0] = senderRoles[0].append( // Use an array cause of strict finality in .forEach
+                                            Component.text(
+                                                    "█",
+                                                    TextColor.color(role.getColorRaw())
+                                            )
+                                    ).append(
+                                            Component.text(role.getName() + ", ", TextColor.color(role.getColorRaw()))
+                                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE);
+                            }
+                    );
+                    Component senderHover = Component.text(
+                                    event.getMessage().getMember().getEffectiveName(),
+                                    TextColor.color(event.getMember().getColorRaw()),
+                                    TextDecoration.BOLD
+                            )
+                            .appendNewline()
+                            .append(
+                                    Component.text(
+                                            "Username: "+ event.getAuthor().getName(),
+                                            TextColor.color(255, 255, 255)
+                                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
+                            )
+                            .appendNewline()
+                            .append(senderRoles[0])
+                            .appendNewline()
+                            .append(
+                                    Component.text(
+                                            "Message on discord",
+                                            TextColor.color(255, 255, 255),
+                                            TextDecoration.ITALIC
+                                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
+                            );
+                    Component message = Component.text(
+                                    "["+ event.getMember().getRoles().get(0).getName() + "] ",
+                                    TextColor.color(event.getMember().getColorRaw())
+                            )
+                            .append(
+                                    Component.text(
+                                            event.getMember().getEffectiveName() +": ",
+                                            TextColor.color(255, 255, 255)
+                                    )
+                            )
+                            .append(
+                                    Component.text(
+                                            event.getMessage().getContentStripped(),
+                                            TextColor.color(255, 255, 255)
+                                    ).hoverEvent(
+                                    HoverEvent.showText(
+                                            Component.text("Go to message")
+                                    )
+                                    ).clickEvent(
+                                            ClickEvent.openUrl(
+                                                    event.getMessage().getJumpUrl()
+                                            )
+                                    )
+                            )
+                            .hoverEvent(HoverEvent.showText(senderHover))
+                            .clickEvent(ClickEvent.openUrl("https://discord.com/channels/@me/"+ event.getMember().getId() +"/"));
+                    if(event.getMessage().getType().equals(MessageType.INLINE_REPLY)) {
+                        Component name;
+                        if(event.getMessage().getReferencedMessage().isWebhookMessage() && event.getMessage().getReferencedMessage().getApplicationIdLong() == info.getIdLong()) // faulty, assumes all webhook messages are from our webhook
+                            name = Component.text("[MC] "+ event.getMessage().getReferencedMessage().getAuthor().getName());
+                        else
+                            name = Component.text(event.getMessage().getReferencedMessage().getAuthor().getEffectiveName());
                         minecraftUtils.sendToMinecraft(Component.text("Replying to ➡ ",
                                         TextColor.color(100, 100, 100), TextDecoration.ITALIC)
-                                .append(Component.text(
-                                        event.getMessage().getReferencedMessage().getAuthor().getName()
-                                                + ": "+ event.getMessage().getReferencedMessage().getContentStripped(),
-                                        TextColor.color(180, 180, 180))));
-                    minecraftUtils.sendToMinecraft(Component.text(event.getAuthor().getName() +": "+ event.getMessage().getContentStripped()));
+                                .append(name)
+                                .append(
+                                        Component.text(
+                                                ": " + event.getMessage().getReferencedMessage().getContentStripped(),
+                                                TextColor.color(180, 180, 180)
+                                        )
+                                ).hoverEvent(
+                                        HoverEvent.showText(
+                                                Component.text("Go to message")
+                                        )
+                                ).clickEvent(
+                                        ClickEvent.openUrl(
+                                                event.getMessage().getReferencedMessage().getJumpUrl()
+                                        )
+                                )
+                        );
+                    }
+                    minecraftUtils.sendToMinecraft(message);
                 }
         } else if(event.isFromType(ChannelType.PRIVATE)){
             // Attempt linking of discord account and minecraft account
+            logger.warn(Component.text("Not yet impl."));
         }
     }
 
@@ -202,7 +300,6 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
     }
 
     private TextChannel getDiscordChannel(){
-        logger.info(Component.text("Getting discord channel"));
         new File("discord").mkdirs();
         String webhookId = "channel_id";
         File tokenFile = new File("discord/channel");
@@ -218,7 +315,6 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
             logger.error(Component.text(e.getMessage(), Style.style(TextColor.color(200, 50, 50))));
             throw new RuntimeException(e);
         }
-        logger.info(Component.text("Channel ID "+ webhookId));
         return jda.getTextChannelById(Long.parseLong(webhookId));
     }
 
@@ -236,7 +332,6 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
             logger.error(Component.text(e.getMessage(), Style.style(TextColor.color(200, 50, 50))));
             throw new RuntimeException(e);
         }
-        logger.info(Component.text("Webhook ID "+ webhookId));
         return jda.retrieveWebhookById(Long.parseLong(webhookId)).complete();
     }
 }
