@@ -61,17 +61,6 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
                             TextColor.color(255, 255, 255)
                     )};
                     Role lastRole = event.getMember().getRoles().get(event.getMember().getRoles().size() - 1);
-                    senderRoles[0] = senderRoles[0].append( // Use an array cause of strict finality in .forEach
-                            Component.text(
-                                    "█",
-                                    TextColor.color(lastRole.getColorRaw())
-                            )
-                    ).append(
-                            Component.text(
-                                    lastRole.getName(),
-                                    TextColor.color(lastRole.getColorRaw())
-                            )
-                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE);
                     event.getMember().getRoles().forEach(
                             role -> {
                                 if (role != lastRole)
@@ -99,6 +88,18 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
                             )
                             .appendNewline()
                             .append(senderRoles[0])
+                            .append( // Use an array cause of strict finality in .forEach
+                                    Component.text(
+                                            "█",
+                                            TextColor.color(lastRole.getColorRaw())
+                                    )
+                            )
+                            .append(
+                                    Component.text(
+                                            lastRole.getName(),
+                                            TextColor.color(lastRole.getColorRaw())
+                                    )
+                            ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
                             .appendNewline()
                             .append(
                                     Component.text(
