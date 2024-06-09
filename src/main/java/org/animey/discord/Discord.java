@@ -10,8 +10,10 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -24,11 +26,52 @@ public final class Discord extends JavaPlugin {
         MESSAGE, ADVANCEMENT, DEATH, JOIN, LEAVE, START, STOP
     }
     private DiscordUtils discordUtils;
-
+    public static class Config {
+        public static String DISCORD_ROLE; // User set placeholders
+        public static String DISCORD_ROLE_COLOR;
+        public static String DISCORD_USERNAME;
+        public static String DISCORD_MESSAGE_LINK;
+        public static String DISCORD_USER_ID;
+        public static String DISCORD_USER_COLOR;
+        public static String DISCORD_NAME;
+        public static String DISCORD_ROLES;
+        public static String DISCORD_MESSAGE;
+        public static String[] DISCORD_ROLES_FMT; // User set formats containing placeholders
+        public static String DISCORD_MESSAGE_REPLY_FMT;
+        public static String DISCORD_MC_MESSAGE_REPLY_FMT;
+        public static String DISCORD_MESSAGE_FMT;
+        public static String DISCORD_SINGLE_ROLE_FMT;
+        private static void updateValues(){
+            FileConfiguration config = getPlugin(Discord.class).getConfig();
+            DISCORD_ROLE = config.getString("minecraft.discord-primary-role-placeholder");
+            DISCORD_ROLE_COLOR = config.getString("minecraft.discord-role-color-placeholder");
+            DISCORD_USERNAME = config.getString("minecraft.discord-username-placeholder");
+            DISCORD_MESSAGE_LINK = config.getString("minecraft.discord-message-link-placeholder");
+            DISCORD_USER_ID = config.getString("minecraft.discord-userid-placeholder");
+            DISCORD_USER_COLOR = config.getString("minecraft.discord-usercolor-placeholder");
+            DISCORD_NAME = config.getString("minecraft.discord-name-placeholder");
+            DISCORD_ROLES = config.getString("minecraft.discord-roles-placeholder");
+            DISCORD_MESSAGE = config.getString("minecraft.discord-message-placeholder");
+            DISCORD_ROLES_FMT = new String[]{
+                    config.getString("minecraft.discord-roles-format-first"),
+                    config.getString("minecraft.discord-roles-format"),
+                    config.getString("minecraft.discord-roles-format-last"),
+            };
+            DISCORD_MESSAGE_REPLY_FMT = config.getString("minecraft.discord-reply-format");
+            DISCORD_MC_MESSAGE_REPLY_FMT = config.getString("minecraft.discord-reply-minecraft-format");
+            DISCORD_MESSAGE_FMT = config.getString("minecraft.discord-message-format");
+            DISCORD_SINGLE_ROLE_FMT = config.getString("minecraft.discord-roles-single-format").equalsIgnoreCase("first")
+                    ? DISCORD_ROLES_FMT[0] : DISCORD_ROLES_FMT[2];
+        }
+    }
     // https://discord.com/oauth2/authorize?client_id={client_id}&scope=bot+messages.read&permissions=275414780928
     @Override
     public void onEnable() {
+        getLogger().info("HEXCODE: #"+ String.format("%06X", Color.BLACK.getRGB()).substring(2)); // assume hex code
         // Plugin startup logic
+        this.getDataFolder().mkdirs();
+        saveDefaultConfig();
+        Config.updateValues();
         String token = getToken(); // from file
         discordUtils = new DiscordUtils();
         MinecraftUtils minecraftUtils = new MinecraftUtils();
@@ -52,9 +95,8 @@ public final class Discord extends JavaPlugin {
         discordUtils.sendToDiscord(EventType.START, new TextComponent[]{Component.text("Server is up")});
     }
     private String getToken() {
-        new File("discord").mkdirs();
         String token = "token_here";
-        File tokenFile = new File("discord/token.txt");
+        File tokenFile = new File(this.getDataFolder(), "token.txt");
         if(!tokenFile.exists() || tokenFile.isDirectory()){
             try {
                 if(tokenFile.createNewFile()){
@@ -66,7 +108,7 @@ public final class Discord extends JavaPlugin {
                 getComponentLogger().error(Component.text(e.getMessage(), Style.style(TextColor.color(200, 50, 50))));
                 throw new RuntimeException(e);
             }
-            getComponentLogger().error(Component.text("PLEASE FILL OUT THE SERVERDIR/DISCORD/TOKEN.TXT FILE WITH YOUR UNIQUE DISCORD BOT TOKEN.",
+            getComponentLogger().error(Component.text("PLEASE FILL OUT THE PLUGIN_FOLDER/TOKEN.TXT FILE WITH YOUR UNIQUE DISCORD BOT TOKEN.",
                     Style.style(TextColor.color(200, 50, 50), TextDecoration.BOLD)));
             throw new RuntimeException();
         }
@@ -82,7 +124,7 @@ public final class Discord extends JavaPlugin {
             }
         }
         if(token.equals("token_here")){
-            getComponentLogger().error(Component.text("PLEASE CHANGE THE SERVERDIR/DISCORD/TOKEN.TXT FILE TO YOUR UNIQUE DISCORD BOT TOKEN.",
+            getComponentLogger().error(Component.text("PLEASE CHANGE THE PLUGIN_FOLDER/TOKEN.TXT FILE TO YOUR UNIQUE DISCORD BOT TOKEN.",
                     Style.style(TextColor.color(200, 50, 50), TextDecoration.BOLD)));
             throw new RuntimeException();
         }
