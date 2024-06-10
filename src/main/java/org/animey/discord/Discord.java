@@ -41,6 +41,20 @@ public final class Discord extends JavaPlugin {
         public static String DISCORD_MC_MESSAGE_REPLY_FMT;
         public static String DISCORD_MESSAGE_FMT;
         public static String DISCORD_SINGLE_ROLE_FMT;
+        public static boolean MINECRAFT_DEATH_EMBED;
+        public static boolean MINECRAFT_JOIN_EMBED;
+        public static boolean MINECRAFT_LEAVE_EMBED;
+        public static boolean MINECRAFT_ADVANCEMENT_EMBED;
+        public static boolean MINECRAFT_START_EMBED;
+        public static boolean MINECRAFT_STOP_EMBED;
+        public static Color MINECRAFT_DEATH_EMBED_COLOR;
+        public static Color MINECRAFT_JOIN_EMBED_COLOR;
+        public static Color MINECRAFT_LEAVE_EMBED_COLOR;
+        public static Color MINECRAFT_ADVANCEMENT_EMBED_COLOR;
+        public static Color MINECRAFT_START_EMBED_COLOR;
+        public static Color MINECRAFT_STOP_EMBED_COLOR;
+        public static String MINECRAFT_START_MESSAGE;
+        public static String MINECRAFT_STOP_MESSAGE;
         private static void updateValues(){
             FileConfiguration config = getPlugin(Discord.class).getConfig();
             DISCORD_ROLE = config.getString("minecraft.discord-primary-role-placeholder");
@@ -62,12 +76,25 @@ public final class Discord extends JavaPlugin {
             DISCORD_MESSAGE_FMT = config.getString("minecraft.discord-message-format");
             DISCORD_SINGLE_ROLE_FMT = config.getString("minecraft.discord-roles-single-format").equalsIgnoreCase("first")
                     ? DISCORD_ROLES_FMT[0] : DISCORD_ROLES_FMT[2];
+            MINECRAFT_DEATH_EMBED = config.getBoolean("discord.death-embed");
+            MINECRAFT_JOIN_EMBED = config.getBoolean("discord.join-embed");
+            MINECRAFT_LEAVE_EMBED = config.getBoolean("discord.leave-embed");
+            MINECRAFT_STOP_EMBED = config.getBoolean("discord.stop-embed");
+            MINECRAFT_START_EMBED = config.getBoolean("discord.start-embed");
+            MINECRAFT_ADVANCEMENT_EMBED = config.getBoolean("discord.advancement-embed");
+            MINECRAFT_DEATH_EMBED_COLOR = Color.decode(config.getString("discord.death-embed-color"));
+            MINECRAFT_JOIN_EMBED_COLOR = Color.decode(config.getString("discord.join-embed-color"));
+            MINECRAFT_START_EMBED_COLOR = Color.decode(config.getString("discord.start-embed-color"));
+            MINECRAFT_STOP_EMBED_COLOR = Color.decode(config.getString("discord.stop-embed-color"));
+            MINECRAFT_LEAVE_EMBED_COLOR = Color.decode(config.getString("discord.leave-embed-color"));
+            MINECRAFT_ADVANCEMENT_EMBED_COLOR = Color.decode(config.getString("discord.advancement-embed-color"));
+            MINECRAFT_START_MESSAGE = config.getString("discord.server-start-message");
+            MINECRAFT_STOP_MESSAGE = config.getString("discord.server-stop-message");
         }
     }
     // https://discord.com/oauth2/authorize?client_id={client_id}&scope=bot+messages.read&permissions=275414780928
     @Override
     public void onEnable() {
-        getLogger().info("HEXCODE: #"+ String.format("%06X", Color.BLACK.getRGB()).substring(2)); // assume hex code
         // Plugin startup logic
         this.getDataFolder().mkdirs();
         saveDefaultConfig();
@@ -92,7 +119,7 @@ public final class Discord extends JavaPlugin {
         ).queue(); // only release thread after jda is done loading
         discordUtils.setJDA(jda);
         getServer().getPluginManager().registerEvents(minecraftUtils, this);
-        discordUtils.sendToDiscord(EventType.START, new TextComponent[]{Component.text("Server is up")});
+        discordUtils.sendToDiscord(EventType.START, new TextComponent[]{Component.text(Config.MINECRAFT_START_MESSAGE)});
     }
     private String getToken() {
         String token = "token_here";
@@ -133,6 +160,6 @@ public final class Discord extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        discordUtils.sendToDiscord(EventType.STOP, new TextComponent[]{Component.text("Server is down")});
+        discordUtils.sendToDiscord(EventType.STOP, new TextComponent[]{Component.text(Config.MINECRAFT_STOP_MESSAGE)});
     }
 }

@@ -21,7 +21,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.*;
 import java.io.*;
 import java.util.List;
 import java.util.Scanner;
@@ -56,117 +55,18 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
             && !event.getMessage().isEphemeral())
                 if(!event.getAuthor().getFlags().contains(User.UserFlag.BOT_HTTP_INTERACTIONS) ||
                         !event.getAuthor().getFlags().contains(User.UserFlag.VERIFIED_BOT)){
-//                    Component[] senderRoles = {Component.text(
-//                            "Roles: ",
-//                            TextColor.color(255, 255, 255)
-//                    )};
-//                    Role lastRole = event.getMember().getRoles().get(event.getMember().getRoles().size() - 1);
-//                    event.getMember().getRoles().forEach(
-//                            role -> {
-//                                if (role != lastRole)
-//                                    senderRoles[0] = senderRoles[0].append( // Use an array cause of strict finality in .forEach
-//                                            Component.text(
-//                                                    "█",
-//                                                    TextColor.color(role.getColorRaw())
-//                                            )
-//                                    ).append(
-//                                            Component.text(role.getName() + ", ", TextColor.color(role.getColorRaw()))
-//                                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE);
-//                            }
-//                    );
-//                    Component senderHover = Component.text(
-//                                    event.getMessage().getMember().getEffectiveName(),
-//                                    TextColor.color(event.getMember().getColorRaw()),
-//                                    TextDecoration.BOLD
-//                            )
-//                            .appendNewline()
-//                            .append(
-//                                    Component.text(
-//                                            "Username: "+ event.getAuthor().getName(),
-//                                            TextColor.color(255, 255, 255)
-//                                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
-//                            )
-//                            .appendNewline()
-//                            .append(senderRoles[0])
-//                            .append( // Use an array cause of strict finality in .forEach
-//                                    Component.text(
-//                                            "█",
-//                                            TextColor.color(lastRole.getColorRaw())
-//                                    )
-//                            )
-//                            .append(
-//                                    Component.text(
-//                                            lastRole.getName(),
-//                                            TextColor.color(lastRole.getColorRaw())
-//                                    )
-//                            ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
-//                            .appendNewline()
-//                            .append(
-//                                    Component.text(
-//                                            "Message on discord",
-//                                            TextColor.color(255, 255, 255),
-//                                            TextDecoration.ITALIC
-//                                    ).decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
-//                            );
-//                    Component message = Component.text(
-//                                    "["+ event.getMember().getRoles().get(0).getName() + "] ",
-//                                    TextColor.color(event.getMember().getColorRaw())
-//                            )
-//                            .append(
-//                                    Component.text(
-//                                            event.getMember().getEffectiveName() +": ",
-//                                            TextColor.color(255, 255, 255)
-//                                    )
-//                            )
-//                            .append(
-//                                    Component.text(
-//                                            event.getMessage().getContentStripped(),
-//                                            TextColor.color(255, 255, 255)
-//                                    ).hoverEvent(
-//                                    HoverEvent.showText(
-//                                            Component.text("Go to message")
-//                                    )
-//                                    ).clickEvent(
-//                                            ClickEvent.openUrl(
-//                                                    event.getMessage().getJumpUrl()
-//                                            )
-//                                    )
-//                            )
-//                            .hoverEvent(HoverEvent.showText(senderHover))
-//                            .clickEvent(ClickEvent.openUrl("https://discord.com/channels/@me/"+ event.getMember().getId() +"/"));
                     if(event.getMessage().getType().equals(MessageType.INLINE_REPLY)) {
                         String replyFmt;
-//                        Component name;
                         if(event.getMessage().getReferencedMessage().isWebhookMessage() && event.getMessage().getReferencedMessage().getApplicationIdLong() == info.getIdLong())
                             replyFmt = Discord.Config.DISCORD_MC_MESSAGE_REPLY_FMT;
-//                            name = Component.text("[MC] "+ event.getMessage().getReferencedMessage().getAuthor().getName());
                         else
                             replyFmt = Discord.Config.DISCORD_MESSAGE_REPLY_FMT;
                         replyFmt = placeVars(event.getMessage().getReferencedMessage(), replyFmt);
                         minecraftUtils.sendToMinecraft(MiniMessage.miniMessage().deserialize(replyFmt));
-//                            name = Component.text(event.getMessage().getReferencedMessage().getAuthor().getEffectiveName());
-//                        minecraftUtils.sendToMinecraft(Component.text("Replying to ➡ ",
-//                                        TextColor.color(100, 100, 100), TextDecoration.ITALIC)
-//                                .append(name)
-//                                .append(
-//                                        Component.text(
-//                                                ": " + event.getMessage().getReferencedMessage().getContentStripped(),
-//                                                TextColor.color(180, 180, 180)
-//                                        )
-//                                ).hoverEvent(
-//                                        HoverEvent.showText(
-//                                                Component.text("Go to message")
-//                                        )
-//                                ).clickEvent(
-//                                        ClickEvent.openUrl(
-//                                                event.getMessage().getReferencedMessage().getJumpUrl()
-//                                        )
-//                                )
-//                        );
+
                     }
                     minecraftUtils.sendToMinecraft(
                             MiniMessage.miniMessage().deserialize(placeVars(event.getMessage(), Discord.Config.DISCORD_MESSAGE_FMT)));
-//                    minecraftUtils.sendToMinecraft(message);
                 }
         } else if(event.isFromType(ChannelType.PRIVATE)){
             // Attempt linking of discord account and minecraft account
@@ -185,12 +85,14 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
         EmbedBuilder messageBuilder;
         switch (type) {
             case DEATH:
-                messageBuilder = new EmbedBuilder();
-                messageBuilder.setAuthor(content[0].content() + " died",
-                        null, "https://mc-heads.net/avatar/"+ minecraftUtils.getPlayerId(content[0].content()));
-                messageBuilder.setFooter(content[1].content());
-                messageBuilder.setColor(Color.RED);
-                discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                if(Discord.Config.MINECRAFT_DEATH_EMBED) {
+                    messageBuilder = new EmbedBuilder();
+                    messageBuilder.setAuthor(content[0].content() + " died",
+                            null, "https://mc-heads.net/avatar/" + minecraftUtils.getPlayerId(content[0].content()));
+                    messageBuilder.setFooter(content[1].content());
+                    messageBuilder.setColor(Discord.Config.MINECRAFT_DEATH_EMBED_COLOR);
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                } else discordChannel.sendMessage(content[1].content()).queue();
                 break;
             case MESSAGE:
                 if(webhook == null)
@@ -205,41 +107,51 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
                     WebhookClient webhookClient = getWebhookClient();
                     webhookClient.send(message);
                     webhookClient.close();
-                    break;
                 }
+                break;
             case ADVANCEMENT:
-                messageBuilder = new EmbedBuilder();
-                messageBuilder.setAuthor(content[0].content() + " made an advancement",
-                        null, "https://mc-heads.net/avatar/"+ minecraftUtils.getPlayerId(content[0].content()));
-                messageBuilder.setFooter(content[1].content());
-                messageBuilder.setColor(Color.GRAY);
-                discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                if(Discord.Config.MINECRAFT_ADVANCEMENT_EMBED) {
+                    messageBuilder = new EmbedBuilder();
+                    messageBuilder.setAuthor(content[0].content() + " made an advancement",
+                            null, "https://mc-heads.net/avatar/" + minecraftUtils.getPlayerId(content[0].content()));
+                    messageBuilder.setFooter(content[1].content());
+                    messageBuilder.setColor(Discord.Config.MINECRAFT_ADVANCEMENT_EMBED_COLOR);
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                } else discordChannel.sendMessage(content[1].content()).queue();
                 break;
             case JOIN:
-                messageBuilder = new EmbedBuilder();
-                messageBuilder.setAuthor(content[0].content() + " has connected",
-                        null, "https://mc-heads.net/avatar/"+ minecraftUtils.getPlayerId(content[0].content()));
-                messageBuilder.setColor(Color.GREEN);
-                discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                if(Discord.Config.MINECRAFT_JOIN_EMBED) {
+                    messageBuilder = new EmbedBuilder();
+                    messageBuilder.setAuthor(content[0].content() + " has connected",
+                            null, "https://mc-heads.net/avatar/" + minecraftUtils.getPlayerId(content[0].content()));
+                    messageBuilder.setColor(Discord.Config.MINECRAFT_JOIN_EMBED_COLOR);
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                } else discordChannel.sendMessage(content[0].content() + " has connected").queue();
                 break;
             case LEAVE:
-                messageBuilder = new EmbedBuilder();
-                messageBuilder.setAuthor(content[0].content() + " has disconnected",
-                        null, "https://mc-heads.net/avatar/"+ minecraftUtils.getPlayerId(content[0].content()));
-                messageBuilder.setColor(Color.RED);
-                discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                if(Discord.Config.MINECRAFT_LEAVE_EMBED) {
+                    messageBuilder = new EmbedBuilder();
+                    messageBuilder.setAuthor(content[0].content() + " has disconnected",
+                            null, "https://mc-heads.net/avatar/" + minecraftUtils.getPlayerId(content[0].content()));
+                    messageBuilder.setColor(Discord.Config.MINECRAFT_LEAVE_EMBED_COLOR);
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                } else discordChannel.sendMessage(content[0].content() + " has disconnected").queue();
                 break;
             case STOP:
-                messageBuilder = new EmbedBuilder();
-                messageBuilder.setAuthor(content[0].content());
-                messageBuilder.setColor(Color.RED);
-                discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                if(Discord.Config.MINECRAFT_STOP_EMBED) {
+                    messageBuilder = new EmbedBuilder();
+                    messageBuilder.setAuthor(content[0].content());
+                    messageBuilder.setColor(Discord.Config.MINECRAFT_STOP_EMBED_COLOR);
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                } else discordChannel.sendMessage(content[0].content()).queue();
                 break;
             case START:
-                messageBuilder = new EmbedBuilder();
-                messageBuilder.setAuthor(content[0].content());
-                messageBuilder.setColor(Color.GREEN);
-                discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                if(Discord.Config.MINECRAFT_START_EMBED) {
+                    messageBuilder = new EmbedBuilder();
+                    messageBuilder.setAuthor(content[0].content());
+                    messageBuilder.setColor(Discord.Config.MINECRAFT_START_EMBED_COLOR);
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
+                } else discordChannel.sendMessage(content[0].content()).queue();
                 break;
             default:
                 discordChannel.sendMessage(content[0].content()).queue();

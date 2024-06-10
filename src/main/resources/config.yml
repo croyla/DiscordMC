@@ -10,21 +10,23 @@ minecraft:
   discord-roles-format: '<color:__ROLE_COLOR__>█__ROLE__, </color:__ROLE_COLOR__>' # The format presented when the above 'roles' placeholder is mentioned, uses the MiniMessage format
   discord-roles-format-last: '<color:__ROLE_COLOR__>█__ROLE__</color:__ROLE_COLOR__>' # The format of the last role in the list of roles
   discord-roles-format-first: '<color:__ROLE_COLOR__>█__ROLE__, </color:__ROLE_COLOR__>' # The format of the first role in the list of roles
-  discord-roles-single-format: 'LAST' # If single role, then use which format? 'LAST', or 'FIRST'
+  discord-roles-single-format: 'LAST' # If single role, then use which format? use 'LAST', else use FIRST
   discord-message-placeholder: '__MESSAGE__' # The discord message sent in stripped form (no markdown)
   discord-reply-format: '<color:dark_gray><bold>Replying to ➡ </bold></color><color:gray><hover:show_text:"<bold><color:__ROLE_COLOR__>__NAME__</color></bold><newline>Username: __USER__<newline>Roles: __ROLES__<newline><italic>Click to open DM</italic>"><click:open_url:https://discord.com/channels/@me/__USER_ID__/>[__ROLE__] __NAME__</hover></click>: <click:open_url:__MESSAGE_LINK__><hover:show_text:Go to discord message>__MESSAGE__</hover></click></color>' # If the message is a reply, then it will show this as well. if empty it shows nothing
   discord-reply-minecraft-format: '<color:dark_gray><bold>Replying to ➡ </bold></color><color:gray><click:open_url:__MESSAGE_LINK__><hover:show_text:Go to discord message>[MC] __NAME__: __MESSAGE__</hover></click></color>' # If the message is a reply to a minecraft-sent message, then it will show this instead of the one above, make sure this does not have 'roles', 'userid', and 'primary-role' tags
   discord-message-format: '[<color:aqua>Discord</color:aqua> | <color:__ROLE_COLOR__>__ROLE__</color:__ROLE_COLOR__>] <hover:show_text:"<bold><color:__ROLE_COLOR__>__NAME__</color></bold><newline>Username: __USER__<newline>Roles: __ROLES__<newline><italic>Click to open DM</italic>"><click:open_url:https://discord.com/channels/@me/__USER_ID__>__NAME__:</click></hover> <hover:show_text:"Go to message"><click:open_url:__MESSAGE_LINK__>__MESSAGE__</click></hover>' # The message format, in MiniMessage form
-#discord:
-#  death-embed: true # Use embeds or messages
-#  join-embed: true
-#  leave-embed: true
-#  advancement-embed: true
-#  start-embed: true
-#  stop-embed: true
-#  death-embed-color: ''
-#  join-embed-color: ''
-#  leave-embed-color: ''
-#  start-embed-color: ''
-#  stop-embed-color: ''
-#  advancement-embed-color: ''
+discord:
+  death-embed: true # Use embeds or messages
+  join-embed: true
+  leave-embed: true
+  advancement-embed: true
+  start-embed: true
+  stop-embed: true
+  death-embed-color: '#ff0000' # Colors defined in hex code
+  join-embed-color: '#00ff00'
+  leave-embed-color: '#ff0000'
+  start-embed-color: '#00ff00'
+  stop-embed-color: '#ff0000'
+  advancement-embed-color: '#808080'
+  server-start-message: '✅ Server has started' # Message sent to discord on server start/stop
+  server-stop-message: '❌ Server is offline'
