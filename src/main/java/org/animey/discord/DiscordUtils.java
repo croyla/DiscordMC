@@ -258,7 +258,7 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
         String ret = fmt
                 .replace(Discord.Config.DISCORD_USER_COLOR, event.isWebhookMessage() ? "" : "#"+ String.format("%06X",event.getMember().getColor().getRGB()).substring(2))
                 .replace(Discord.Config.DISCORD_ROLE_COLOR, event.isWebhookMessage() ? "" : "#"+ String.format("%06X",event.getMember().getColor().getRGB()).substring(2))
-                .replace(Discord.Config.DISCORD_MESSAGE_LINK, event.isWebhookMessage() ? "" : event.getJumpUrl())
+                .replace(Discord.Config.DISCORD_MESSAGE_LINK, event.getJumpUrl())
                 .replace(Discord.Config.DISCORD_USER_ID, event.isWebhookMessage() ? "" : event.getMember().getId())
                 .replace(Discord.Config.DISCORD_ROLES, event.isWebhookMessage() ? "" : formattedRoles(event.getMember().getRoles()));
         String[] splitMessage = ret.split(Discord.Config.DISCORD_MESSAGE);
