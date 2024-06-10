@@ -267,7 +267,7 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
             s = s.replace(Discord.Config.DISCORD_USERNAME, event.getAuthor().getName());
             if(!event.isWebhookMessage() && !event.getMember().getRoles().isEmpty())
                 s = s.replace(Discord.Config.DISCORD_ROLE, event.getMember().getRoles().get(0).getName());
-            s = s.replace(Discord.Config.DISCORD_NAME, event.getAuthor().getEffectiveName());
+            s = s.replace(Discord.Config.DISCORD_NAME, event.isWebhookMessage() ? event.getAuthor().getEffectiveName() : event.getMember().getEffectiveName());
             if(joined.length() == 0)
                 joined.append(s);
             else joined.append(event.getContentStripped()).append(s);
