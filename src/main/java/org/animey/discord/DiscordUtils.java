@@ -21,6 +21,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.*;
 import java.io.*;
 import java.util.List;
 import java.util.Scanner;
@@ -142,8 +143,8 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
                     messageBuilder = new EmbedBuilder();
                     messageBuilder.setAuthor(content[0].content());
                     messageBuilder.setColor(Discord.Config.MINECRAFT_STOP_EMBED_COLOR);
-                    discordChannel.sendMessageEmbeds(messageBuilder.build()).queue();
-                } else discordChannel.sendMessage(content[0].content()).queue();
+                    discordChannel.sendMessageEmbeds(messageBuilder.build()).complete(); // Complete as we want to halt the shutdown of server till our message is sent
+                } else discordChannel.sendMessage(content[0].content()).complete();
                 break;
             case START:
                 if(Discord.Config.MINECRAFT_START_EMBED) {
@@ -279,20 +280,23 @@ public class DiscordUtils extends ListenerAdapter { // Send message, retrieve me
         if(roles.size() == 1)
             return Discord.Config.DISCORD_SINGLE_ROLE_FMT
                     .replace(Discord.Config.DISCORD_ROLE, roles.get(0).getName())
-                    .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", roles.get(0).getColor().getRGB()).substring(2));
+                    .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", roles.get(0).getColor() == null ? Color.GRAY.getRGB() : roles.get(0).getColor().getRGB()).substring(2));
         String first = Discord.Config.DISCORD_ROLES_FMT[0]
                 .replace(Discord.Config.DISCORD_ROLE, roles.get(0).getName())
-                .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", roles.get(0).getColor().getRGB()).substring(2));
+                .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", roles.get(0).getColor() == null ? Color.GRAY.getRGB() : roles.get(0).getColor().getRGB()).substring(2));
         String last = Discord.Config.DISCORD_ROLES_FMT[2]
                 .replace(Discord.Config.DISCORD_ROLE, roles.get(roles.size() - 1).getName())
-                .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", roles.get(roles.size() - 1).getColor().getRGB()).substring(2));
+                .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", roles.get(roles.size() - 1).getColor() == null ? Color.GRAY.getRGB() : roles.get(roles.size() - 1).getColor().getRGB()).substring(2));
         if(roles.size() == 2)
             return first + last;
 
         String[] ret = {first};
-        roles.forEach(role -> ret[0] = ret[0] + Discord.Config.DISCORD_ROLES_FMT[1]
-                .replace(Discord.Config.DISCORD_ROLE, role.getName())
-                .replace(Discord.Config.DISCORD_ROLE_COLOR, "#"+ String.format("%06X", role.getColor().getRGB()).substring(2))
+        roles.forEach(role -> {
+                    if(role != roles.get(0) && role != roles.get(roles.size() - 1))
+                        ret[0] = ret[0] + Discord.Config.DISCORD_ROLES_FMT[1]
+                                .replace(Discord.Config.DISCORD_ROLE, role.getName())
+                                .replace(Discord.Config.DISCORD_ROLE_COLOR, "#" + String.format("%06X", role.getColor() == null ? Color.GRAY.getRGB() : role.getColor().getRGB()).substring(2));
+                }
         );
         return ret[0] + last;
     }
